@@ -13,7 +13,9 @@ const signupSchema = z.object({
 export type SignupValues = z.infer<typeof signupSchema>;
 
 const loginSchema = z.object({
-  username: requiredField,
+  username: requiredField
+    .trim()
+    .regex(/^[a-zA-Z0-9_-]+$/, "Only letters, numbers, - and _ allowed"),
   password: requiredField.min(8, { message: "Must be 8 character" }),
 });
 export type LoginValues = z.infer<typeof loginSchema>;

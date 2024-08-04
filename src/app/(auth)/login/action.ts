@@ -3,12 +3,14 @@
 import { lucia } from "@/lib/auth";
 import { prisma } from "@/lib/prisma-client";
 import { loginSchema, LoginValues } from "@/lib/validations";
-import { verify } from "@node-rs/argon2";
+import bcrypt from "bcryptjs";
 import { isRedirectError } from "next/dist/client/components/redirect";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-const login = async (credentials: LoginValues): Promise<{ error: string }> => {
+export const login = async (
+  credentials: LoginValues,
+): Promise<{ error: string }> => {
   try {
     const { username, password } = loginSchema.parse(credentials);
 
@@ -26,12 +28,7 @@ const login = async (credentials: LoginValues): Promise<{ error: string }> => {
       };
     }
 
-    const validPassword = await verify(existingUser.password, password, {
-      memoryCost: 19456,
-      timeCost: 2,
-      outputLen: 32,
-      parallelism: 1,
-    });
+    const validPassword = await bcrypt.compare(password, existingUser.password);
 
     if (!validPassword) {
       return {

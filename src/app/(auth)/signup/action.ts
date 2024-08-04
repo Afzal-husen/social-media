@@ -1,24 +1,20 @@
 "use server";
-import { lucia } from "@/lib/auth";
 import { prisma } from "@/lib/prisma-client";
 import { signupSchema, SignupValues } from "@/lib/validations";
-import { hash } from "@node-rs/argon2";
 import { generateIdFromEntropySize } from "lucia";
 import { isRedirectError } from "next/dist/client/components/redirect";
 import { redirect } from "next/navigation";
+import bcrypt from "bcryptjs";
+import { lucia } from "@/lib/auth";
+import { cookies } from "next/headers";
 
-const signup = async (
+export const signup = async (
   credentials: SignupValues,
 ): Promise<{ error: string }> => {
   try {
     const { email, password, username } = signupSchema.parse(credentials);
 
-    const passwordHash = await hash(password, {
-      memoryCost: 19456,
-      timeCost: 2,
-      outputLen: 32,
-      parallelism: 1,
-    });
+    const passwordHash = await bcrypt.hash(password, 10);
 
     const userId = generateIdFromEntropySize(10);
 
@@ -59,6 +55,15 @@ const signup = async (
         password: passwordHash,
       },
     });
+
+    const session = await lucia.createSession(userId, {});
+    const sessionCookie = lucia.createSessionCookie(session.id);
+    cookies().set(
+      sessionCookie.name,
+      sessionCookie.value,
+      sessionCookie.attributes,
+    );
+
     return redirect("/");
   } catch (error) {
     if (isRedirectError(error)) throw error;
