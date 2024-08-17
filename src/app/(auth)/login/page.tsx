@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 const Page = () => {
   return (
     <main className="grid h-screen place-items-center p-5">
+      
       <div className="flex size-full max-h-[40rem] max-w-[64rem] overflow-hidden rounded-2xl bg-card shadow-2xl">
         <div className="w-full space-y-10 p-10 md:w-1/2">
           <h1 className="text-center text-3xl font-bold">
